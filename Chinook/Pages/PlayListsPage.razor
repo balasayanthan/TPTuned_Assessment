@@ -1,0 +1,56 @@
+﻿@page "/playlists"
+@attribute [Authorize]
+
+@using AutoMapper;
+@using Chinook.Models
+@using Chinook.Services;
+@using Microsoft.EntityFrameworkCore
+@using Chinook.ClientModels
+@inject IPlayListService playListService;
+@inject IMapper Mapper;
+
+<PageTitle>PlayListsPage</PageTitle>
+
+<h1>PlayLists</h1>
+
+@if (playLists == null)
+{
+    <Loading />
+}
+else
+{
+    <table class="table table-striped table-hover table-sm">
+        <thead>
+            <tr>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var playList in playLists)
+            {
+                <tr>
+                    <td><a href="PlayList/@playList.PlaylistId">@playList.Name</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<PlayListDto> playLists;
+    private string InfoMessage;
+    private string ErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+        await GetAllPlaylist();
+    }
+
+    public async Task<List<PlayListDto>> GetAllPlaylist()
+    {
+        var playlistData = await playListService.GetAllPlayList();
+        playLists = Mapper.Map<List<PlayListDto>>(playlistData);
+        return playLists;
+    }
+}

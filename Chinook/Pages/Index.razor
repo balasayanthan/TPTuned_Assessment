@@ -1,0 +1,99 @@
+﻿@page "/"
+@attribute [Authorize]
+
+@using Chinook.Models
+@using Chinook.Services;
+@using Microsoft.EntityFrameworkCore
+@inject IArtistService artistService;
+<PageTitle>Index</PageTitle>
+
+<h1>Artists</h1>
+
+<div class="row">
+    @* <span class="form-group mb-2">
+        <input type="text" id="ArtistSearch" @bind-value=@searchTerm class="form-control" placeholder="Type here to find artist...">
+    </span>
+    <span class="form-group mb-2">
+        <input class="btn btn" type="button" value="Search" @onclick="@GetArtistsByName" />
+        <input type="button" value="Clear" @onclick="@GetArtistsByName" />
+
+    </span> *@
+    <div class="input-group mb-3">
+        <input type="text" id="ArtistSearch" @bind-value=@searchTerm class="form-control" placeholder="Search...">
+        <button class="btn btn-primary" type="button" @onclick="@GetArtistsByName">
+            <i class="bi bi-search"></i> Search
+        </button>
+        <button class="btn btn-secondary" type="button" @onclick="@ClearSearch">
+            <i class="bi bi-x"></i> Clear
+        </button>
+    </div>
+</div>
+
+
+@if (Artists == null)
+{
+    <Loading />
+}
+else
+{
+    <table class="table table-striped table-hover table-sm">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Number of albums</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Artists.Count() < 1)
+            {
+                <h5>Sorry no data found...</h5>
+            }else
+            {
+                @foreach (var artist in Artists)
+                {
+                    <tr>
+                        <td><a href="Artist/@artist.ArtistId">@artist.Name</a></td>
+                        <td>@GetAlbumsForArtistCount(artist.ArtistId)</td>
+                    </tr>
+                }
+            }            
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Artist> Artists;
+    private string searchTerm = "";
+    [Inject] IDbContextFactory<ChinookContext> DbFactory { get; set; }
+
+    protected override async Task OnInitializedAsync() {
+        await InvokeAsync(StateHasChanged);
+        Artists = await GetArtists();
+    }
+
+    public async Task<List<Artist>> GetArtists()
+    {   
+        var dta = await artistService.GetArtistsByNameSearch(searchTerm.Trim());
+        return dta;
+        // var dbContext = await DbFactory.CreateDbContextAsync();
+        // var users = dbContext.Users.Include(a => a.UserPlaylists).ToList();
+        // return dbContext.Artists.ToList();
+    }
+
+    public string GetAlbumsForArtistCount(long artistId)
+    {
+        var artist = Artists.Where(a => a.ArtistId == artistId).FirstOrDefault();
+        return artist.Albums.Count().ToString();
+    }
+
+    public async Task GetArtistsByName()
+    {
+        Artists = await GetArtists();
+    }
+
+    public async Task ClearSearch()
+    {
+        searchTerm = "";
+        Artists = await GetArtists();
+    }
+}
