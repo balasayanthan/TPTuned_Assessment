@@ -39,7 +39,7 @@
     [CascadingParameter] private Task<AuthenticationState> authenticationState { get; set; }
     private bool collapseNavMenu = true;
 
-    private Int64 playlistnumber;
+    private Int64 playlistnumber = 0;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
@@ -51,8 +51,11 @@
     protected override async Task OnInitializedAsync()
     {
         string CurrentUserId = await GetUserId();
-        var dta = await userPlayListService.GetMyFavoutitPlayLIst(CurrentUserId);
-        playlistnumber = dta;
+        if (!String.IsNullOrEmpty(CurrentUserId))
+        {
+            var dta = await userPlayListService.GetMyFavoutitPlayLIst(CurrentUserId);
+            playlistnumber = dta;
+        }        
     }
 
     private async Task<string> GetUserId()
