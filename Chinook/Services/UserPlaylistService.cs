@@ -17,7 +17,15 @@ namespace Chinook.Services
             try
             {
                 UserPlaylist userPlaylist = DbContext.UserPlaylists.Where(a => a.UserId == userId && a.Playlist.Name == "Favorites").FirstOrDefault();
-                return userPlaylist.PlaylistId;
+                if (userPlaylist==null)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return userPlaylist.PlaylistId;
+                }
+                
             }
             catch (Exception)
             {
